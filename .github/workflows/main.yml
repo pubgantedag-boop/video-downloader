@@ -1,0 +1,34 @@
+name: Download File and Add to Repository
+
+on:
+  workflow_dispatch:
+    inputs:
+      file_url:
+        description: 'URL of the file to download'
+        required: true
+      file_name:
+        description: 'Destination file name (e.g. myfile.pdf)'
+        required: true
+        default: 'downloaded_file'
+      commit_message:
+        description: 'Commit message'
+        default: 'Add downloaded file'
+
+jobs:
+  download-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download file
+        run: |
+          curl -L -o "${{ github.event.inputs.file_name }}" "${{ github.event.inputs.file_url }}"
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "${{ github.event.inputs.file_name }}"
+          git commit -m "${{ github.event.inputs.commit_message }}" || echo "No changes to commit"
+          git push
